@@ -1,10 +1,10 @@
-name: Discord Biweekly Alert
+name: Discord Biweekly Alert Test
 
 on:
   schedule:
-    # Berjalan setiap hari Senin jam 10:10 UTC (17:10 WIB)
-    - cron: '10 10 * * 1'
-  workflow_dispatch: # Mengizinkan eksekusi manual untuk tes
+    # UJI COBA: Berjalan otomatis setiap 1 menit
+    - cron: '* * * * *'
+  workflow_dispatch:
 
 jobs:
   send-discord-alert:
@@ -16,7 +16,6 @@ jobs:
           WEEK_NUM=$(date +%V)
           echo "Nomor minggu saat ini: $WEEK_NUM"
           
-          # Memeriksa apakah nomor minggu adalah genap
           if [ $((10#$WEEK_NUM % 2)) -eq 0 ]; then
             echo "should_run=true" >> $GITHUB_OUTPUT
           else
