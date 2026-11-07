@@ -1,24 +1,28 @@
-name: Discord Biweekly Alert Test
+name: Discord Biweekly Alert 
 
 on:
-  schedule:
-    # UJI COBA: Berjalan otomatis setiap 1 menit
-    - cron: '* * * * *'
+  # Memungkinkan pemicu dari luar via API / Webhook (cron-job.org)
+  repository_dispatch:
+    types: [trigger-discord-alert]
+  # Memungkinkan pengujian manual dari tab Actions di GitHub
   workflow_dispatch:
 
 jobs:
   send-discord-alert:
     runs-on: ubuntu-latest
     steps:
-      - name: Cek Selang 2 Minggu (Minggu Genap)
+      - name: Cek Selang 2 Minggu (Minggu Ganjil)
         id: check-week
         run: |
           WEEK_NUM=$(date +%V)
           echo "Nomor minggu saat ini: $WEEK_NUM"
           
-          if [ $((10#$WEEK_NUM % 2)) -eq 0 ]; then
+          # Memeriksa apakah minggu GANJIL (sisa bagi tidak sama dengan 0)
+          if [ $((10#$WEEK_NUM % 2)) -ne 0 ]; then
+            echo "Kondisi terpenuhi (Minggu Ganjil)!"
             echo "should_run=true" >> $GITHUB_OUTPUT
           else
+            echo "Kondisi TIDAK terpenuhi (Minggu Genap). Lewati eksekusi."
             echo "should_run=false" >> $GITHUB_OUTPUT
           fi
 
