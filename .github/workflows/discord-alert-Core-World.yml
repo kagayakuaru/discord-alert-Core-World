@@ -1,0 +1,49 @@
+name: Discord Biweekly Alert
+
+on:
+  schedule:
+    # Berjalan setiap hari Senin jam 10:10 UTC (17:10 WIB)
+    - cron: '10 10 * * 1'
+  workflow_dispatch: # Mengizinkan eksekusi manual untuk tes
+
+jobs:
+  send-discord-alert:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cek Selang 2 Minggu (Minggu Genap)
+        id: check-week
+        run: |
+          WEEK_NUM=$(date +%V)
+          echo "Nomor minggu saat ini: $WEEK_NUM"
+          
+          # Memeriksa apakah nomor minggu adalah genap
+          if [ $((10#$WEEK_NUM % 2)) -eq 0 ]; then
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Kirim Pesan Webhook Discord
+        if: steps.check-week.outputs.should_run == 'true' || github.event_name == 'workflow_dispatch'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d '{
+                 "content": "<@&1513954878777594027>",
+                 "allowed_mentions": {
+                   "roles": ["1513954878777594027"]
+                 },
+                 "embeds": [
+                   {
+                     "color": 16711680,
+                     "title": "Reminds you",
+                     "description": "⚔️ **Core World  **\n⏳ **Status : 10 Menit lagi **\n",
+                     "footer": {
+                       "text": "RF Alert System"
+                     }
+                   }
+                 ]
+               }' \
+               "$DISCORD_WEBHOOK_URL"
